@@ -3,24 +3,60 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cloudflare Edge Test Site</title>
+  <title>Cloudflare Edge Portal with RBAC</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
 </head>
 <body>
   <div class="background-glow"></div>
 
+  <!-- Top Navigation Bar -->
+  <nav class="top-nav">
+    <div class="nav-left">
+      <div class="nav-logo">⚡ Cloudflare RBAC Portal</div>
+      <span class="nav-status-dot"></span>
+      <span class="nav-env" id="deployment-badge">Cloudflare Pages</span>
+    </div>
+    <div class="nav-right">
+      <div class="user-pill" id="user-pill">
+        <span class="user-avatar" id="nav-user-avatar">👤</span>
+        <div class="user-meta">
+          <span class="user-name" id="nav-user-name">Guest</span>
+          <span class="user-role-badge role-guest" id="nav-user-role">GUEST</span>
+        </div>
+      </div>
+      <button class="btn btn-sm btn-primary" id="btn-open-login">Sign In</button>
+      <button class="btn btn-sm btn-secondary" id="btn-logout" style="display: none;">Logout</button>
+    </div>
+  </nav>
+
   <main class="container">
+    <!-- Hero Header -->
     <header class="hero">
       <div class="badge">
         <span class="status-dot"></span>
-        <span id="deployment-badge">Cloudflare Pages Test</span>
+        <span>Role-Based Access Control (RBAC) Active</span>
       </div>
-      <h1>Cloudflare Edge Playground</h1>
+      <h1>Cloudflare Edge &amp; RBAC Control Center</h1>
       <p class="subtitle">
-        A fast, responsive test site ready for instant global edge deployment via Cloudflare Pages.
+        Secure role-based dashboard demonstrating edge diagnostics, permission gating, and administrator controls.
       </p>
+
+      <!-- Quick Role Switcher Banner for Testing -->
+      <div class="quick-role-bar">
+        <span class="quick-label">⚡ Quick Role Switch:</span>
+        <button class="btn-role-quick" data-login-role="viewer">👁️ Viewer</button>
+        <button class="btn-role-quick" data-login-role="dev">💻 Developer</button>
+        <button class="btn-role-quick" data-login-role="admin">👑 Admin</button>
+        <button class="btn-role-quick" id="btn-quick-guest">🔓 Guest (Logout)</button>
+      </div>
     </header>
+
+    <!-- SECTION 1: PUBLIC / ALL ROLES -->
+    <div class="section-title">
+      <h2>🌐 Public &amp; Edge Network Metrics</h2>
+      <span class="role-access-tag tag-all">Accessible by: All Roles</span>
+    </div>
 
     <section class="grid">
       <!-- Card 1: Cloudflare Edge Diagnostics -->
@@ -29,12 +65,12 @@
           <div class="icon">🌐</div>
           <div>
             <h3>Edge Network Trace</h3>
-            <p>Inspect your connection to the Cloudflare network</p>
+            <p>Cloudflare Anycast edge node connection</p>
           </div>
         </div>
         <div class="edge-info" id="edge-info">
           <div class="info-row">
-            <span class="label">Detected Edge Node (Colo):</span>
+            <span class="label">Nearest Data Center (Colo):</span>
             <span class="value" id="val-colo">Detecting...</span>
           </div>
           <div class="info-row">
@@ -42,7 +78,7 @@
             <span class="value" id="val-ip">Detecting...</span>
           </div>
           <div class="info-row">
-            <span class="label">Protocol / HTTP:</span>
+            <span class="label">Protocol:</span>
             <span class="value" id="val-http">Detecting...</span>
           </div>
           <div class="info-row">
@@ -72,13 +108,13 @@
         <button class="btn btn-primary" id="btn-ping">Test Edge Latency</button>
       </div>
 
-      <!-- Card 3: Interactive Features -->
+      <!-- Card 3: Interactive Counter -->
       <div class="card features-card">
         <div class="card-header">
           <div class="icon">🛠️</div>
           <div>
             <h3>Interactive Test Widget</h3>
-            <p>Verify JavaScript runtime & DOM interaction</p>
+            <p>DOM interaction &amp; state persistence</p>
           </div>
         </div>
         <div class="counter-box">
@@ -91,37 +127,250 @@
         </div>
         <p class="timestamp">Session started: <span id="session-time"></span></p>
       </div>
+    </section>
 
-      <!-- Card 4: Deployment Checklist -->
-      <div class="card checklist-card">
+    <!-- SECTION 2: DEVELOPER ROLE GATED -->
+    <div class="section-title">
+      <h2>💻 Developer Console</h2>
+      <span class="role-access-tag tag-dev">Requires: Developer or Admin</span>
+    </div>
+
+    <section class="grid rbac-grid">
+      <!-- Developer Tool 1: Header Inspector -->
+      <div class="card rbac-card" data-required-role="developer">
         <div class="card-header">
-          <div class="icon">🚀</div>
+          <div class="icon">🔍</div>
           <div>
-            <h3>Hosting Checklist</h3>
-            <p>Steps to complete for production hosting</p>
+            <h3>CF Request Headers</h3>
+            <p>Inspect raw edge metadata and request parameters</p>
           </div>
         </div>
-        <ul class="checklist">
-          <li class="checked">✅ Static site generated & styled</li>
-          <li class="checked">✅ Edge diagnostic script included</li>
-          <li id="check-github">⏳ Push repository to GitHub</li>
-          <li id="check-cf">⏳ Connect repo in Cloudflare Pages</li>
-          <li id="check-domain">⏳ Configure custom domain (Optional)</li>
-        </ul>
+        <div class="code-terminal" id="dev-headers-display">
+          <pre><code>{
+  "cf-ray": "87b92f440a1b-LHE",
+  "cf-visitor": "{\"scheme\":\"https\"}",
+  "cf-ipcountry": "PK",
+  "cache-control": "public, max-age=14400",
+  "x-edge-worker": "active-v2"
+}</code></pre>
+        </div>
+        <button class="btn btn-secondary" id="btn-dev-inspect">Fetch Live Headers</button>
+
+        <!-- Lock Overlay for Unauthorized Users -->
+        <div class="lock-overlay" id="lock-dev-1">
+          <div class="lock-content">
+            <div class="lock-icon">🔒</div>
+            <h4>Developer Access Required</h4>
+            <p>Log in as <strong>Developer</strong> or <strong>Admin</strong> to inspect raw headers.</p>
+            <button class="btn btn-sm btn-primary" onclick="openLoginModal('dev')">Sign in as Developer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Developer Tool 2: API & Worker Test -->
+      <div class="card rbac-card" data-required-role="developer">
+        <div class="card-header">
+          <div class="icon">📊</div>
+          <div>
+            <h3>Edge API Stress Test</h3>
+            <p>Execute rapid concurrent requests to CDN</p>
+          </div>
+        </div>
+        <div class="dev-metrics">
+          <div class="metric-item">
+            <span class="metric-label">Requests Sent</span>
+            <span class="metric-value" id="val-req-count">0</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Avg Edge Response</span>
+            <span class="metric-value" id="val-avg-time">-- ms</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Cache Hit Ratio</span>
+            <span class="metric-value" id="val-cache-ratio">100%</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btn-run-stress">Run 5x Rapid Edge Burst</button>
+
+        <!-- Lock Overlay -->
+        <div class="lock-overlay" id="lock-dev-2">
+          <div class="lock-content">
+            <div class="lock-icon">🔒</div>
+            <h4>Developer Access Required</h4>
+            <p>Sign in to run API burst and cache diagnostics.</p>
+            <button class="btn btn-sm btn-primary" onclick="openLoginModal('dev')">Sign in as Developer</button>
+          </div>
+        </div>
       </div>
     </section>
 
+    <!-- SECTION 3: ADMIN ROLE GATED -->
+    <div class="section-title">
+      <h2>👑 Administrator Control Center</h2>
+      <span class="role-access-tag tag-admin">Requires: Admin Only</span>
+    </div>
+
+    <section class="grid rbac-grid">
+      <!-- Admin Tool 1: Cache & Edge Operations -->
+      <div class="card rbac-card" data-required-role="admin">
+        <div class="card-header">
+          <div class="icon">🧹</div>
+          <div>
+            <h3>Cloudflare Edge Cache Purge</h3>
+            <p>Invalidate cached static assets across 300+ edge POPs</p>
+          </div>
+        </div>
+        <div class="admin-status-box">
+          <p>Current Cache Status: <strong style="color: var(--accent-green);" id="cache-status-text">Active &amp; Warm</strong></p>
+          <small>Last Purged: <span id="last-purged-time">Never (Initial Build)</span></small>
+        </div>
+        <button class="btn btn-danger" id="btn-purge-cache">⚡ Purge Everything (Edge Invalidation)</button>
+
+        <!-- Lock Overlay -->
+        <div class="lock-overlay" id="lock-admin-1">
+          <div class="lock-content">
+            <div class="lock-icon">🔒</div>
+            <h4>Administrator Privilege Required</h4>
+            <p>Only users with the <strong>Admin</strong> role can purge edge cache.</p>
+            <button class="btn btn-sm btn-primary" onclick="openLoginModal('admin')">Sign in as Admin</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Tool 2: Security & Firewall Simulator -->
+      <div class="card rbac-card" data-required-role="admin">
+        <div class="card-header">
+          <div class="icon">🛡️</div>
+          <div>
+            <h3>Security Level &amp; WAF</h3>
+            <p>Manage Cloudflare Web Application Firewall posture</p>
+          </div>
+        </div>
+        <div class="waf-control">
+          <label for="waf-level" class="label">Firewall Sensitivity:</label>
+          <select id="waf-level" class="form-select">
+            <option value="Essentially Off">Essentially Off</option>
+            <option value="Low">Low</option>
+            <option value="Medium" selected>Medium (Standard)</option>
+            <option value="High">High (Strict)</option>
+            <option value="I'm Under Attack!">⚡ "I'm Under Attack!" Mode</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" id="btn-save-waf">Apply WAF Rule Policy</button>
+
+        <!-- Lock Overlay -->
+        <div class="lock-overlay" id="lock-admin-2">
+          <div class="lock-content">
+            <div class="lock-icon">🔒</div>
+            <h4>Administrator Privilege Required</h4>
+            <p>Security rules and WAF configurations are restricted to Admin.</p>
+            <button class="btn btn-sm btn-primary" onclick="openLoginModal('admin')">Sign in as Admin</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Tool 3: Live RBAC Audit Log -->
+      <div class="card rbac-card full-width-card" data-required-role="admin">
+        <div class="card-header">
+          <div class="icon">📜</div>
+          <div>
+            <h3>RBAC Security Audit Trail</h3>
+            <p>Real-time audit log of user authentications and actions</p>
+          </div>
+        </div>
+        <div class="audit-log-container" id="audit-log">
+          <!-- Populated by script.js -->
+        </div>
+        <div class="audit-actions">
+          <button class="btn btn-sm btn-secondary" id="btn-clear-logs">Clear Logs</button>
+        </div>
+
+        <!-- Lock Overlay -->
+        <div class="lock-overlay" id="lock-admin-3">
+          <div class="lock-content">
+            <div class="lock-icon">🔒</div>
+            <h4>Administrator Privilege Required</h4>
+            <p>Audit logging is restricted to security administrators.</p>
+            <button class="btn btn-sm btn-primary" onclick="openLoginModal('admin')">Sign in as Admin</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: DEPLOYMENT CHECKLIST -->
+    <section class="card checklist-card" style="margin-top: 2rem;">
+      <div class="card-header">
+        <div class="icon">🚀</div>
+        <div>
+          <h3>Cloudflare Pages Deployment Checklist</h3>
+          <p>Live status of your Git repository and Edge deployment</p>
+        </div>
+      </div>
+      <ul class="checklist">
+        <li class="checked">✅ Static site generated &amp; styled with responsive UI</li>
+        <li class="checked">✅ Role-Based Access Control (RBAC) implemented</li>
+        <li class="checked" id="check-github">✅ Git repository pushed to GitHub (hafeedul/cloudflare-test-site)</li>
+        <li id="check-cf">⏳ Connect repo in Cloudflare Pages dashboard</li>
+        <li id="check-domain">⏳ Configure custom domain (Optional)</li>
+      </ul>
+    </section>
+
     <footer>
-      <p>Built for testing with <span class="highlight">Cloudflare Pages</span> &amp; <span class="highlight">GitHub</span></p>
+      <p>Built for testing with <span class="highlight">Cloudflare Pages</span>, <span class="highlight">GitHub</span>, and <span class="highlight">RBAC</span></p>
       <div class="footer-links">
-        <a href="https://dash.cloudflare.com" target="_blank" rel="noopener">Cloudflare Dashboard</a>
+        <a href="https://github.com/hafeedul/cloudflare-test-site" target="_blank" rel="noopener">GitHub Repository</a>
         <span>•</span>
-        <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://dash.cloudflare.com" target="_blank" rel="noopener">Cloudflare Dashboard</a>
         <span>•</span>
         <a href="https://developers.cloudflare.com/pages/" target="_blank" rel="noopener">Pages Docs</a>
       </div>
     </footer>
   </main>
+
+  <!-- LOGIN MODAL -->
+  <div class="modal-backdrop" id="login-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>🔐 Portal Authentication</h3>
+        <button class="btn-close" id="btn-close-modal">&times;</button>
+      </div>
+
+      <div class="demo-accounts-box">
+        <h4>Demo Credentials (Click to autofill):</h4>
+        <div class="demo-chips">
+          <button type="button" class="chip chip-admin" onclick="fillCredentials('admin', 'admin123')">
+            👑 <strong>admin</strong> / <code>admin123</code> (Admin)
+          </button>
+          <button type="button" class="chip chip-dev" onclick="fillCredentials('dev', 'dev123')">
+            💻 <strong>dev</strong> / <code>dev123</code> (Developer)
+          </button>
+          <button type="button" class="chip chip-viewer" onclick="fillCredentials('viewer', 'viewer123')">
+            👁️ <strong>viewer</strong> / <code>viewer123</code> (Viewer)
+          </button>
+        </div>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="input-username">Username:</label>
+          <input type="text" id="input-username" class="form-input" placeholder="e.g. admin, dev, viewer" required autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label for="input-password">Password:</label>
+          <input type="password" id="input-password" class="form-input" placeholder="Enter password" required autocomplete="current-password" />
+        </div>
+        <div id="login-error" class="login-error" style="display: none;"></div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Sign In</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
 
   <script src="script.js"></script>
 </body>
