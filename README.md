@@ -4,15 +4,15 @@ A modern, responsive static web application with **Role-Based Access Control (RB
 
 ---
 
-## 👥 Demo Roles & Credentials
+## 👥 Roles & Access Overview
 
-The portal implements 3 distinct permission tiers with full username/password authentication:
+The portal implements 3 distinct permission tiers. Passwords are kept secret and authenticated using cryptographic **SHA-256** verification (passwords are never stored in plaintext or exposed on the site):
 
-| Role | Username | Password | Access & Permissions |
+| Role | Username | Password Status | Access & Permissions |
 | :--- | :--- | :--- | :--- |
-| 👑 **Administrator** | `admin` | `admin123` | **Full Access**: Cloudflare Edge Cache Purge, WAF firewall policy simulator, live RBAC security audit logs, developer tools, and public diagnostics. |
-| 💻 **Developer** | `dev` | `dev123` | **Technical Access**: Raw CF Request Headers inspector, 5x Rapid Edge Burst test, latency benchmark, and public metrics. Restricted from Admin operations. |
-| 👁️ **Viewer** | `viewer` | `viewer123` | **Read-Only Access**: Public Edge network trace (nearest colo/POP detection), latency benchmark, and DOM counter. Developer and Admin tools are locked with interactive prompts. |
+| 👑 **Administrator** | `admin` | Secret (Cryptographically Hashed) | **Full Access**: Cloudflare Edge Cache Purge, WAF firewall policy simulator, live RBAC security audit logs, developer tools, and public diagnostics. |
+| 💻 **Developer** | `dev` | Secret (Cryptographically Hashed) | **Technical Access**: Raw CF Request Headers inspector, 5x Rapid Edge Burst test, latency benchmark, and public metrics. Restricted from Admin operations. |
+| 👁️ **Viewer** | `viewer` | Secret (Cryptographically Hashed) | **Read-Only Access**: Public Edge network trace (nearest colo/POP detection), latency benchmark, and DOM counter. Developer and Admin tools are locked. |
 | 🔓 **Guest** | *(Logged out)* | *N/A* | Default unauthenticated state. Restricted to public overview with login callouts. |
 
 ---
@@ -21,9 +21,8 @@ The portal implements 3 distinct permission tiers with full username/password au
 
 1. **Role-Based UI Gating**:
    - Unauthorized panels are automatically blurred and locked with a permission-specific padlock badge and direct elevation CTA.
-2. **Persistent Authentication**:
-   - Sessions are preserved in `localStorage` across page refreshes.
-   - Includes one-click Quick Role Switch buttons in the hero section for instant testing.
+2. **Cryptographic Authentication**:
+   - Client-side SHA-256 hashing verifies input passwords against pre-hashed digests without ever storing or revealing plaintext passwords on the webpage or in the repository.
 3. **Cloudflare Edge Diagnostics**:
    - Native query to `/cdn-cgi/trace` to detect edge airport POP codes (e.g., `LHE`, `ISB`, `DXB`, `FRA`), protocol (`HTTP/3`), and `TLS 1.3`.
 4. **Security Audit Log**:

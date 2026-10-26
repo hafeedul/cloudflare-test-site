@@ -1,10 +1,12 @@
 // ==========================================
-// ROLE-BASED ACCESS CONTROL (RBAC) STORE
+// SECURE ROLE-BASED ACCESS CONTROL (RBAC) STORE
+// Passwords are cryptographically hashed with SHA-256.
+// Plaintext passwords are NEVER stored in code or displayed on the site.
 // ==========================================
 const USERS_DB = {
   admin: {
     username: "admin",
-    password: "admin123",
+    passwordHash: "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9", // sha256
     name: "System Administrator",
     role: "admin",
     avatar: "👑",
@@ -12,7 +14,7 @@ const USERS_DB = {
   },
   dev: {
     username: "dev",
-    password: "dev123",
+    passwordHash: "87274af01876341455b32d805946f272871bb42effa6604dccf28bb027afa82b", // sha256
     name: "Lead Cloud Engineer",
     role: "developer",
     avatar: "💻",
@@ -20,8 +22,8 @@ const USERS_DB = {
   },
   viewer: {
     username: "viewer",
-    password: "viewer123",
-    name: "Guest Auditor",
+    passwordHash: "65375049b9e4d7cad6c9ba286fdeb9394b28135a3e84136404cfccfdcc438894", // sha256
+    name: "Auditor / Viewer",
     role: "viewer",
     avatar: "👁️",
     tier: 1
@@ -39,8 +41,17 @@ const ROLE_TIERS = {
 let currentUser = null;
 let auditLogs = [
   { time: new Date(Date.now() - 600000).toLocaleTimeString(), actor: "System", message: "Edge worker initialized across Anycast nodes." },
-  { time: new Date(Date.now() - 300000).toLocaleTimeString(), actor: "Security", message: "RBAC policy applied: Multi-tier role enforcement active." }
+  { time: new Date(Date.now() - 300000).toLocaleTimeString(), actor: "Security", message: "Cryptographic RBAC policy active (SHA-256 verification)." }
 ];
+
+// Cryptographic SHA-256 Hash Function (Native Web Crypto API)
+async function sha256(plainText) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(plainText);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
 
 // Helper: Show Toast Notification
 function showToast(message, type = "info") {
@@ -125,51 +136,58 @@ function applyRbacUI() {
   renderAuditLogs();
 }
 
-// Authentication Handlers
-function login(username, password) {
+// Secure Authentication Handler
+async function authenticate(username, password) {
   const user = USERS_DB[username.toLowerCase().trim()];
-  if (!user || user.password !== password) {
+  if (!user) {
     return false;
   }
 
-  currentUser = user;
-  localStorage.setItem("cloudflare_rbac_user", JSON.stringify(user));
+  // Compute SHA-256 hash of submitted password
+  const inputHash = await sha256(password);
+  if (inputHash !== user.passwordHash) {
+    return false;
+  }
+
+  currentUser = {
+    username: user.username,
+    name: user.name,
+    role: user.role,
+    avatar: user.avatar,
+    tier: user.tier
+  };
+
+  localStorage.setItem("cloudflare_rbac_session", JSON.stringify(currentUser));
   applyRbacUI();
-  addAuditLog(user.username, `User logged in with role: ${user.role.toUpperCase()}`);
-  showToast(`Authenticated as ${user.name} (${user.role.toUpperCase()})`, "success");
+  addAuditLog(user.username, `Authenticated securely with role: ${user.role.toUpperCase()}`);
+  showToast(`Welcome, ${user.name}! (${user.role.toUpperCase()})`, "success");
   return true;
 }
 
 function logout(notify = true) {
   if (currentUser) {
-    addAuditLog(currentUser.username, "User logged out.");
+    addAuditLog(currentUser.username, "Signed out of session.");
   }
   currentUser = null;
-  localStorage.removeItem("cloudflare_rbac_user");
+  localStorage.removeItem("cloudflare_rbac_session");
   applyRbacUI();
   if (notify) {
     showToast("Signed out. Switched to Guest mode.", "info");
   }
 }
 
-// Autofill Helper for Demo Chips
-window.fillCredentials = function(username, password) {
-  const userInp = document.getElementById("input-username");
-  const passInp = document.getElementById("input-password");
-  if (userInp && passInp) {
-    userInp.value = username;
-    passInp.value = password;
-  }
-};
-
 // Global Open Login Modal
-window.openLoginModal = function(roleHint = "") {
+window.openLoginModal = function() {
   const modal = document.getElementById("login-modal");
   const errorBox = document.getElementById("login-error");
-  if (errorBox) errorBox.style.display = "none";
+  const userInp = document.getElementById("input-username");
+  const passInp = document.getElementById("input-password");
 
-  if (roleHint && USERS_DB[roleHint]) {
-    window.fillCredentials(USERS_DB[roleHint].username, USERS_DB[roleHint].password);
+  if (errorBox) errorBox.style.display = "none";
+  if (passInp) passInp.value = "";
+  if (userInp) {
+    userInp.value = "";
+    userInp.focus();
   }
 
   if (modal) modal.classList.add("is-active");
@@ -180,15 +198,15 @@ window.openLoginModal = function(roleHint = "") {
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
   // 1. Restore previous session if stored
-  const savedUser = localStorage.getItem("cloudflare_rbac_user");
-  if (savedUser) {
+  const savedSession = localStorage.getItem("cloudflare_rbac_session");
+  if (savedSession) {
     try {
-      const parsed = JSON.parse(savedUser);
+      const parsed = JSON.parse(savedSession);
       if (USERS_DB[parsed.username]) {
-        currentUser = USERS_DB[parsed.username];
+        currentUser = parsed;
       }
     } catch (e) {
-      localStorage.removeItem("cloudflare_rbac_user");
+      localStorage.removeItem("cloudflare_rbac_session");
     }
   }
 
@@ -222,6 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
   const loginError = document.getElementById("login-error");
   const btnLogout = document.getElementById("btn-logout");
+  const btnSubmitLogin = document.getElementById("btn-submit-login");
 
   function closeModal() {
     if (modal) modal.classList.remove("is-active");
@@ -239,39 +258,34 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Form Submit
+  // Form Submit with Cryptographic SHA-256 verification
   if (loginForm) {
-    loginForm.addEventListener("submit", (e) => {
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const u = document.getElementById("input-username").value;
       const p = document.getElementById("input-password").value;
 
-      const success = login(u, p);
+      if (btnSubmitLogin) {
+        btnSubmitLogin.disabled = true;
+        btnSubmitLogin.textContent = "Verifying...";
+      }
+
+      const success = await authenticate(u, p);
+
+      if (btnSubmitLogin) {
+        btnSubmitLogin.disabled = false;
+        btnSubmitLogin.textContent = "Sign In";
+      }
+
       if (success) {
         closeModal();
       } else {
         if (loginError) {
-          loginError.textContent = "Invalid username or password. Please use one of the demo accounts.";
+          loginError.textContent = "Invalid username or password. Please check your credentials.";
           loginError.style.display = "block";
         }
       }
     });
-  }
-
-  // Quick Role Switcher Buttons
-  document.querySelectorAll("[data-login-role]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const roleKey = btn.getAttribute("data-login-role");
-      const user = USERS_DB[roleKey];
-      if (user) {
-        login(user.username, user.password);
-      }
-    });
-  });
-
-  const btnQuickGuest = document.getElementById("btn-quick-guest");
-  if (btnQuickGuest) {
-    btnQuickGuest.addEventListener("click", () => logout(true));
   }
 
   // 4. Session time

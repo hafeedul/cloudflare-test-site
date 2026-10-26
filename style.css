@@ -189,42 +189,7 @@ body {
   margin: 0 auto 1.5rem;
 }
 
-/* Quick Role Bar */
-.quick-role-bar {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 0.6rem 1rem;
-  border-radius: 12px;
-  border: 1px solid var(--card-border);
-}
 
-.quick-label {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.btn-role-quick {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #fff;
-  padding: 0.35rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-role-quick:hover {
-  background: var(--accent-orange);
-  border-color: var(--accent-orange);
-  transform: translateY(-1px);
-}
 
 /* Section Titles */
 .section-title {
@@ -741,47 +706,11 @@ body {
   color: #fff;
 }
 
-.demo-accounts-box {
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
-  padding: 0.9rem;
-  margin-bottom: 1.25rem;
-}
-
-.demo-accounts-box h4 {
-  font-size: 0.8rem;
+.modal-subtitle {
+  font-size: 0.88rem;
   color: var(--text-muted);
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.demo-chips {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.chip {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  padding: 0.4rem 0.6rem;
-  color: var(--text-main);
-  font-size: 0.8rem;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.2s ease;
-}
-
-.chip:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.chip code {
-  color: var(--accent-orange);
-  background: rgba(0, 0, 0, 0.3);
-  padding: 0.1rem 0.3rem;
-  border-radius: 4px;
+  margin-bottom: 1.25rem;
+  line-height: 1.4;
 }
 
 .form-group {
