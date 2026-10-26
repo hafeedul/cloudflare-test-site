@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cloudflare Edge Test Site</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+  <div class="background-glow"></div>
+
+  <main class="container">
+    <header class="hero">
+      <div class="badge">
+        <span class="status-dot"></span>
+        <span id="deployment-badge">Cloudflare Pages Test</span>
+      </div>
+      <h1>Cloudflare Edge Playground</h1>
+      <p class="subtitle">
+        A fast, responsive test site ready for instant global edge deployment via Cloudflare Pages.
+      </p>
+    </header>
+
+    <section class="grid">
+      <!-- Card 1: Cloudflare Edge Diagnostics -->
+      <div class="card edge-card">
+        <div class="card-header">
+          <div class="icon">🌐</div>
+          <div>
+            <h3>Edge Network Trace</h3>
+            <p>Inspect your connection to the Cloudflare network</p>
+          </div>
+        </div>
+        <div class="edge-info" id="edge-info">
+          <div class="info-row">
+            <span class="label">Detected Edge Node (Colo):</span>
+            <span class="value" id="val-colo">Detecting...</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Client IP:</span>
+            <span class="value" id="val-ip">Detecting...</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Protocol / HTTP:</span>
+            <span class="value" id="val-http">Detecting...</span>
+          </div>
+          <div class="info-row">
+            <span class="label">TLS Security:</span>
+            <span class="value" id="val-tls">Detecting...</span>
+          </div>
+        </div>
+        <button class="btn btn-secondary" id="btn-refresh-trace">Re-check Edge Trace</button>
+      </div>
+
+      <!-- Card 2: Latency & Speed Test -->
+      <div class="card latency-card">
+        <div class="card-header">
+          <div class="icon">⚡</div>
+          <div>
+            <h3>Latency Benchmark</h3>
+            <p>Measure round-trip time to nearest CDN edge</p>
+          </div>
+        </div>
+        <div class="benchmark-display">
+          <div class="speed-number" id="latency-number">--</div>
+          <span class="speed-unit">ms RTT</span>
+        </div>
+        <div class="status-bar">
+          <div class="status-fill" id="latency-bar" style="width: 0%"></div>
+        </div>
+        <button class="btn btn-primary" id="btn-ping">Test Edge Latency</button>
+      </div>
+
+      <!-- Card 3: Interactive Features -->
+      <div class="card features-card">
+        <div class="card-header">
+          <div class="icon">🛠️</div>
+          <div>
+            <h3>Interactive Test Widget</h3>
+            <p>Verify JavaScript runtime & DOM interaction</p>
+          </div>
+        </div>
+        <div class="counter-box">
+          <span class="counter-display" id="counter-val">0</span>
+          <div class="btn-group">
+            <button class="btn btn-sm" id="btn-decrement">-</button>
+            <button class="btn btn-sm" id="btn-reset">Reset</button>
+            <button class="btn btn-sm btn-primary" id="btn-increment">+</button>
+          </div>
+        </div>
+        <p class="timestamp">Session started: <span id="session-time"></span></p>
+      </div>
+
+      <!-- Card 4: Deployment Checklist -->
+      <div class="card checklist-card">
+        <div class="card-header">
+          <div class="icon">🚀</div>
+          <div>
+            <h3>Hosting Checklist</h3>
+            <p>Steps to complete for production hosting</p>
+          </div>
+        </div>
+        <ul class="checklist">
+          <li class="checked">✅ Static site generated & styled</li>
+          <li class="checked">✅ Edge diagnostic script included</li>
+          <li id="check-github">⏳ Push repository to GitHub</li>
+          <li id="check-cf">⏳ Connect repo in Cloudflare Pages</li>
+          <li id="check-domain">⏳ Configure custom domain (Optional)</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      <p>Built for testing with <span class="highlight">Cloudflare Pages</span> &amp; <span class="highlight">GitHub</span></p>
+      <div class="footer-links">
+        <a href="https://dash.cloudflare.com" target="_blank" rel="noopener">Cloudflare Dashboard</a>
+        <span>•</span>
+        <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+        <span>•</span>
+        <a href="https://developers.cloudflare.com/pages/" target="_blank" rel="noopener">Pages Docs</a>
+      </div>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
